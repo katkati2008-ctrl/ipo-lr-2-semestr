@@ -4,7 +4,7 @@ from django.http import HttpResponse
 def main(request):
     return render(request,'index.html')
 
-def author(request):
+def author(content):
     content="""
 <title>Об авторе</title>
 <h1>Информация об авторе</h1>
@@ -14,7 +14,7 @@ def author(request):
     </ul>"""
     return HttpResponse(content)
 
-def about(request):
+def about(content):
     content = """
     <title>О магазине</title>
     <h1>Здесь находится основная информация о магазине</h1>
