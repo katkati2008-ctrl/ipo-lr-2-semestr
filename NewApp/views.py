@@ -23,3 +23,4 @@ def about(content):
          </ul>"""
     return HttpResponse(content)
 # Create your views here.
+
