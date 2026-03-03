@@ -61,7 +61,7 @@ class CartElement(models.Model):
     
     def valid_price(self):
         if self.quantity > self.product.quantity:
-            raise ValidationError
+            raise ValidationError("Нет в наличии")
     
 
     
