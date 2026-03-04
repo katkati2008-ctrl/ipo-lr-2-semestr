@@ -5,8 +5,13 @@
 <p><strong>Цена:</strong> {{ product.price }} руб</p>
 <p><strong>В наличии:</strong> {{ product.quantity }} шт.</p>
 <p><strong>Описание:</strong> {{ product.description }}</p>
-<p><strong>Фото:</strong> {{ product.product_image }}</p>
+<div>
+   {% if product.product_image %}
+        <img src="{{ product.product_image.url }}" alt="{{ product.name }}" style="max-width: 500px;">
+    {% else %}
+        <p>Изображение отсутствует</p>
+    {% endif %}
 
 {% if user.is_authenticated and product.quantity > 0 %}
-    <a href="{% url 'add_to_cart' product.id %}" style="padding:10px 20px; background:green; color:white;">Добавить в корзину</a>
+    <a href="{% url 'add_to_cart' product.id %}"><button type="submit">Добавить в корзину</button></a>
 {% endif %}
