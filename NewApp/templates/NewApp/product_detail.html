@@ -1,3 +1,4 @@
+<title>Информация о продукте</title>
 <h1>{{ product.name }}</h1>
 
 <p><strong>Категория:</strong> {{ product.category.name }}</p>
@@ -14,4 +15,5 @@
 
 {% if user.is_authenticated and product.quantity > 0 %}
     <a href="{% url 'add_to_cart' product.id %}"><button type="submit">Добавить в корзину</button></a>
+    <a href="{% url 'product_list'%}"><button type="submit">В каталог</button></a>
 {% endif %}
