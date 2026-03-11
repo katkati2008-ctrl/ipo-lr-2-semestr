@@ -103,5 +103,10 @@ def remove_from_cart(request,item_id):
 def cart_view(request):
    cart, _ = Cart.objects.get_or_create(user=request.user)
    return render(request, 'NewApp/cart.html', {'cart': cart})
+
+@login_required
+def checkout(request):
+   cart, _ = Cart.objects.get_or_create(user=request.user)
+    
 # Create your views here.
 
