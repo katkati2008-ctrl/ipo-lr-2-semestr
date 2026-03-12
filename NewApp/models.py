@@ -63,6 +63,12 @@ class CartElement(models.Model):
         if self.quantity > self.product.quantity:
             raise ValidationError("Нет в наличии")
     
+class Order(models.model):
+    user=models.ForeignKey(User,on_delete=models.CASCADE,related_name='user',verbose_name='Пользователь')
+    home_address=models.CharField(max_length=300,related_name='home_address',verbose_name='Ваш адрес')
+    num_phone=models.CharField(max_length=25,related_name='num_phone',verbose_name='Номер телефона')
+    total_price = models.DecimalField(max_digits=10,decimal_places=2,related_name='total_price',verbose_name="Стоимость заказа")
+
 
     
 

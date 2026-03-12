@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.contrib import messages
-from .models import Product, Category, Manufacturer, Cart, CartElement
+from .models import Product, Category, Manufacturer, Cart, CartElement,Order
 def main(request):
     return render(request,'NewApp/index.html')
 
@@ -104,9 +104,26 @@ def cart_view(request):
    cart, _ = Cart.objects.get_or_create(user=request.user)
    return render(request, 'NewApp/cart.html', {'cart': cart})
 
+
 @login_required
 def checkout(request):
    cart, _ = Cart.objects.get_or_create(user=request.user)
+   items = CartElement.objects.filter(cart=cart)
+   if not items:
+       messages.error(request,"Корзина пуста")
+       return redirect('cart_view')
+   
+   if request.method == 'POST':
+       home_address=request.POST.get('home_address')
+       num_phone=request.POST.get('num_phone')
+
+       if not home_address or not num_phone:
+           messages.error(request,"Введите все запрашиваемые данные")
+           return render(request,'NewApp/checkout.html',{'items':items})
+    
+       total_price= sum(item.elem_price() for item in items)
+
+       
     
 # Create your views here.
 
