@@ -3,7 +3,14 @@ from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.contrib import messages
-from .models import Product, Category, Manufacturer, Cart, CartElement,Order
+from .models import Product, Category, Manufacturer, Cart, CartElement,Order,OrderElement
+from django.conf import settings
+from openpyxl import Workbook
+from io import BytesIO
+from django.core.mail import EmailMessage
+from django.contrib.auth import login
+from .forms import CustomUserCreationForm
+
 def main(request):
     return render(request,'NewApp/index.html')
 
@@ -22,7 +29,9 @@ def about(content):
     <title>О магазине</title>
     <h1>Здесь находится основная информация о магазине</h1>
     <ul>
-       <h2>Данный сайт будет содержать ассортимент,состоящий из товаров для пикника<h2>
+       <h2>Данный сайт представляет вещи для пикника и туризма<h2>
+       <h2>С ассортиментом вы можете ознакомиться тут:<h2>
+       <a href="/catalog/">Перейти в каталог</a>
          </ul>"""
     return HttpResponse(content)
 
@@ -123,7 +132,85 @@ def checkout(request):
     
        total_price= sum(item.elem_price() for item in items)
 
+       order=Order.objects.create(
+           user=request.user,
+           home_address=home_address,
+           num_phone=num_phone,
+           total_price=total_price
+       )
        
+       for item in items:
+           OrderElement.objects.create(
+               order=order,
+               product=item.product,
+               quantity=item.quantity,
+               price=item.product.price
+           )
+        
+       wb = Workbook()
+       ws = wb.active
+       ws.title = order.__str__()
+       ws.append(["Товар","Количество","Цена за шт.","Сумма"])
+       for item in items:
+           ws.append([
+               item.product.name,
+               item.quantity,
+               item.product.price,
+               item.elem_price()
+           ])
+           product=item.product
+           product.quantity-=item.quantity
+           product.save()
+       ws.append([])
+       ws.append(["Сумма заказа:",total_price])
+       excel_file = BytesIO()
+       wb.save(excel_file)
+       excel_file.seek(0)
+
+       if not request.user.email:
+           messages.error(request,"Укажите вашу почту email для получения чека")
+           return redirect('register')
+       subject = order.__str__()
+
+       message=f'''
+       Ваш заказ успешно оформлен.
+       Номер заказа: {order.id}.
+       Чек будет отправлен на вашу почту.
+       Спасибо за покупку!
+       '''
+
+       from_email = settings.DEFAULT_FROM_EMAIL
+       recipient_list = [request.user.email]
+
+       email = EmailMessage(
+            subject,
+            message,
+            from_email,
+            recipient_list
+        )
+       email.attach(f"check_{order.id}.xlsx",excel_file.getvalue(),'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+       email.send()
+       items.delete()
+       messages.success(request,f"Заказ №{order.id} успешно оформлен! Чек отправлен на почту: {request.user.email}.")
+       return redirect('cart_view')
+   
+   context = {
+        'items':items,
+        'total_price':sum(item.elem_price() for item in items)
+    }
     
+   return render(request,'NewApp/checkout.html', context)
+
+def register(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request,user)
+            return redirect('product_list')
+    else:
+        form = CustomUserCreationForm()
+    return render(request,'NewApp/register.html', {'form': form})
+
 # Create your views here.
 

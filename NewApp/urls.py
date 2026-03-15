@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from django.contrib.auth import views as auth_views
 
 
 
@@ -15,5 +16,7 @@ urlpatterns = [
     path('cart/remove/<int:item_id>/',views.remove_from_cart,name='remove_from_cart'),
     path('cart/',views.cart_view,name='cart_view'),
     path('checkout/',views.checkout,name="checkout"),
+    path('register/',views.register,name="register"),
+    path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
 ]
 

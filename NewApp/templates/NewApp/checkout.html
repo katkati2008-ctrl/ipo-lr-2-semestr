@@ -1,0 +1,120 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Оформление заказа</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            gap: 30px;
+        }
+        .form-section {
+            flex: 1;
+        }
+        .cart-section {
+            flex: 1;
+            background: #e7d4f7;
+            padding: 20px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0 15px 0;
+            box-sizing: border-box;
+        }
+        button {
+            background: rgb(92, 0, 128);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        table {
+            width: 100%;
+        }
+        td {
+            padding: 5px;
+        }
+        .total {
+            font-weight: bold;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+        .error {
+            color: red;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Оформление заказа</h1>
+    
+    <div class="container">
+      
+        <div class="form-section">
+            <h2>Данные получателя</h2>
+            
+            <form method="post" action="{% url 'checkout' %}">
+                {% csrf_token %}
+                
+                <label>ФИО *</label>
+                <input type="text" name="full_name" required>
+                
+                <label>Адрес доставки *</label>
+                <textarea name="home_address" rows="3" required></textarea>
+                
+                <label>Телефон *</label>
+                <input type="text" name="num_phone" required>
+                
+                <label>Email для чека</label>
+                <input type="email" name="email" value="{{ user.email }}">
+                
+                
+                <button type="submit">Подтвердить заказ</button>
+            </form>
+        </div>
+        
+      
+        <div class="cart-section">
+            <h2>Ваш заказ</h2>
+            
+            <table>
+                {% for item in cart.items.all %}
+                <tr>
+                    <td>{{ item.product.name }}</td>
+                    <td>x{{ item.quantity }}</td>
+                    <td align="right">{{ item.elem_price }} руб</td>
+                </tr>
+                {% endfor %}
+            </table>
+            
+            <hr>
+            
+            <div class="total">
+                <table>
+                    <tr>
+                        <td>Итоговая сумма:</td>
+                        <td align="right">{{ cart.total_price }} руб</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <p style="color: #666; font-size: 14px; margin-top: 20px;">
+                * - обязательные поля
+            </p>
+        </div>
+    </div>
+    
+    <p style="margin-top: 20px;">
+        <a href="{% url 'cart_view' %}">← Вернуться в корзину</a>
+    </p>
+
+   
+</body>
+</html>

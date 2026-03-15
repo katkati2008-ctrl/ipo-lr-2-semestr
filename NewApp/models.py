@@ -24,7 +24,7 @@ class Product(models.Model):
     name=models.CharField(max_length=200,verbose_name='Название товара')
     description=models.TextField(null=False,verbose_name='Описание товара')
     product_image=models.ImageField(upload_to='product/')
-    price=models.DecimalField(max_digits=10, decimal_places=2,validators=[MinValueValidator(0)])
+    price=models.DecimalField(max_digits=10,verbose_name='Цена', decimal_places=2,validators=[MinValueValidator(0)])
     quantity=models.IntegerField(validators=[MinValueValidator(0)])
     category=models.ForeignKey(Category,on_delete=models.CASCADE)
     manufacturer=models.ForeignKey(Manufacturer,on_delete=models.CASCADE)
@@ -59,15 +59,29 @@ class CartElement(models.Model):
     def elem_price(self):
         return self.product.price * self.quantity
     
-    def valid_price(self):
+    def valid_elem(self):
         if self.quantity > self.product.quantity:
             raise ValidationError("Нет в наличии")
     
-class Order(models.model):
+class Order(models.Model):
     user=models.ForeignKey(User,on_delete=models.CASCADE,related_name='user',verbose_name='Пользователь')
-    home_address=models.CharField(max_length=300,related_name='home_address',verbose_name='Ваш адрес')
-    num_phone=models.CharField(max_length=25,related_name='num_phone',verbose_name='Номер телефона')
-    total_price = models.DecimalField(max_digits=10,decimal_places=2,related_name='total_price',verbose_name="Стоимость заказа")
+    home_address=models.CharField(max_length=300,verbose_name='Ваш адрес')
+    num_phone=models.CharField(max_length=25,verbose_name='Номер телефона')
+    total_price = models.DecimalField(max_digits=10,decimal_places=2,verbose_name="Стоимость заказа")
+    date_time=models.DateTimeField(auto_now_add=True,verbose_name="Время и дата заказа")
+
+    def __str__(self):
+        return f"Заказ №{self.id},пользователя {self.user.username}"
+    
+class OrderElement(models.Model):
+       order=models.ForeignKey(Order,on_delete=models.CASCADE,verbose_name='Заказ')
+       product=models.ForeignKey(Product,on_delete=models.CASCADE,verbose_name='Товар')
+       quantity=models.PositiveIntegerField(verbose_name='Количество')
+       price=models.DecimalField(max_digits=10, decimal_places=2,validators=[MinValueValidator(0)])
+
+
+    
+
 
 
     
