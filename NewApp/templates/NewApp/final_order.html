@@ -1,6 +1,5 @@
 <html>
 <head>
-    {% extends "index.html" %}
     <meta charset="UTF-8">
     <title>Оформление заказа</title>
     <style>
@@ -54,35 +53,8 @@
     </style>
 </head>
 <body>
-    <h1>Оформление заказа</h1>
-    
-    <div class="container">
-      
-        <div class="form-section">
-            <h2>Данные получателя</h2>
-            
-            <form method="post" action="{% url 'checkout' %}">
-                {% csrf_token %}
-                
-                <label>ФИО *</label>
-                <input type="text" name="full_name" required>
-                
-                <label>Адрес доставки *</label>
-                <textarea name="home_address" rows="3" required></textarea>
-                
-                <label>Телефон *</label>
-                <input type="text" name="num_phone" required>
-                
-                <label>Email для чека</label>
-                <input type="email" name="email" value="{{ user.email }}">
-                
-                
-                <button type="submit" class="btn btn-primary">Подтвердить заказ</button>
-            </form>
-        </div>
-        
-      
-        <div class="cart-section">
+    <h1>Подтверждение заказа</h1>
+    <div class="cart-section">
             <h2>Ваш заказ</h2>
             
             <table>

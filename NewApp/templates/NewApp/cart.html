@@ -39,5 +39,9 @@
     </table>
      <a href="{% url 'checkout'%}"><button type="submit">Оформить заказ</button></a>
      <a href="{% url 'product_list'%}"><button type="submit">В каталог</button></a>
- 
+ {% else %}
+        <p style="text-align: center; color: #2e2828; font-size: 18px; margin: 50px;">🛍️ Корзина пуста</p>
+        <p style="text-align: center;">
+            <a href="{% url 'product_list' %}" class="btn btn-secondary"> <button type="submit">📦 Перейти в каталог</button></a>
+        </p>
 {% endif %}
