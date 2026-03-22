@@ -3,6 +3,10 @@
      body {
             background: #e7d4f7;  
         }
+        h1 {
+  color: #34024b;
+}
+  button { background: #2d0157; color: rgb(230, 170, 238); border: none; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-size: 14px; }
 </style>
 <h1>Корзина</h1>
 
@@ -10,15 +14,14 @@
     <table border="1" style="width:100%; border-collapse:collapse #938dce">
         <tr>
             <th>Товар</th>
-            <th>Цена</th>
-            <th>Кол-во</th>
             <th>Стоимость</th>
+            <th>Кол-во</th>
             <th>Действия</th>
         </tr>
         {% for item in cart.items.all %}
         <tr>
             <td>{{ item.product.name }}</td>
-            <td>{{ item.product.price }} руб</td>
+            <td>{{ item.elem_price }} руб</td>
             <td>
                 <form action="{% url 'update_cart' item.id %}" method="post">
                     {% csrf_token %}
@@ -26,7 +29,7 @@
                     <button type="submit">Обновить</button>
                 </form>
             </td>
-            <td>{{ item.item_price }} руб</td>
+           
             <td>
                 <a href="{% url 'remove_from_cart' item.id %}" onclick="return confirm('Удалить?')"> <button type="submit">Удалить</button></a>
             </td>
@@ -37,11 +40,11 @@
             <td colspan="2"><strong>{{ cart.total_price }} руб</strong></td>
         </tr>
     </table>
-     <a href="{% url 'checkout'%}"><button type="submit">Оформить заказ</button></a>
+     <a href="{% url 'checkout'%}"><button type="button">Оформить заказ</button></a>
      <a href="{% url 'product_list'%}"><button type="submit">В каталог</button></a>
  {% else %}
-        <p style="text-align: center; color: #2e2828; font-size: 18px; margin: 50px;">🛍️ Корзина пуста</p>
+        <p style="text-align: center; color: #37015c; font-size: 18px; margin: 50px;">Корзина пуста</p>
         <p style="text-align: center;">
-            <a href="{% url 'product_list' %}" class="btn btn-secondary"> <button type="submit">📦 Перейти в каталог</button></a>
+            <a href="{% url 'product_list' %}" class="btn btn-secondary"> <button type="button">Перейти в каталог</button></a>
         </p>
 {% endif %}

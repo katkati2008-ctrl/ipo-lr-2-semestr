@@ -67,6 +67,7 @@ class Order(models.Model):
     user=models.ForeignKey(User,on_delete=models.CASCADE,related_name='user',verbose_name='Пользователь')
     home_address=models.CharField(max_length=300,verbose_name='Ваш адрес')
     num_phone=models.CharField(max_length=25,verbose_name='Номер телефона')
+    email = models.EmailField(blank=True, null=True)
     total_price = models.DecimalField(max_digits=10,decimal_places=2,verbose_name="Стоимость заказа")
     date_time=models.DateTimeField(auto_now_add=True,verbose_name="Время и дата заказа")
 

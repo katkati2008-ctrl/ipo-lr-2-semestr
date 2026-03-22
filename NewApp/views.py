@@ -114,17 +114,30 @@ def cart_view(request):
    return render(request, 'NewApp/cart.html', {'cart': cart})
 
 
+
 @login_required
 def checkout(request):
    cart, _ = Cart.objects.get_or_create(user=request.user)
    items = CartElement.objects.filter(cart=cart)
+   
    if not items:
        messages.error(request,"Корзина пуста")
        return redirect('cart_view')
    
    if request.method == 'POST':
+    
        home_address=request.POST.get('home_address')
        num_phone=request.POST.get('num_phone')
+       user_email = request.POST.get('email')
+
+       if not user_email:
+            user_email = request.user.email
+
+       if not user_email:
+            messages.error(request, "Укажите email для получения чека")
+            return render(request, 'NewApp/checkout.html', {
+                'items': items, 
+                'total_price': sum(i.elem_price() for i in items)})
 
        if not home_address or not num_phone:
            messages.error(request,"Введите все запрашиваемые данные")
@@ -136,6 +149,7 @@ def checkout(request):
            user=request.user,
            home_address=home_address,
            num_phone=num_phone,
+           email=user_email, 
            total_price=total_price
        )
        
@@ -149,7 +163,7 @@ def checkout(request):
         
        wb = Workbook()
        ws = wb.active
-       ws.title = order.__str__()
+       ws.title = f"Заказ_{order.id}"
        ws.append(["Товар","Количество","Цена за шт.","Сумма"])
        for item in items:
            ws.append([
@@ -163,15 +177,13 @@ def checkout(request):
            product.save()
        ws.append([])
        ws.append(["Сумма заказа:",total_price])
+
        excel_file = BytesIO()
        wb.save(excel_file)
        excel_file.seek(0)
 
-       if not request.user.email:
-           messages.error(request,"Укажите вашу почту email для получения чека")
-           return redirect('register')
-       subject = order.__str__()
 
+       subject = f"Ваш заказ #{order.id} оформлен"
        message=f'''
        Ваш заказ успешно оформлен.
        Номер заказа: {order.id}.
@@ -180,18 +192,17 @@ def checkout(request):
        '''
 
        from_email = settings.DEFAULT_FROM_EMAIL
-       recipient_list = [request.user.email]
-
+      
        email = EmailMessage(
             subject,
             message,
             from_email,
-            recipient_list
+            [user_email]
         )
-       email.attach(f"check_{order.id}.xlsx",excel_file.getvalue(),'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-       email.send()
+       email.attach(f"check_{order.id}.xlsx",excel_file.getvalue(),'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')  
+       email.send(fail_silently=False)
        items.delete()
-       messages.success(request,f"Заказ №{order.id} успешно оформлен! Чек отправлен на почту: {request.user.email}.")
+     
        return redirect('cart_view')
    
    context = {
@@ -200,6 +211,7 @@ def checkout(request):
     }
     
    return render(request,'NewApp/checkout.html', context)
+
 
 def register(request):
     if request.method == 'POST':
@@ -210,7 +222,11 @@ def register(request):
             return redirect('product_list')
     else:
         form = CustomUserCreationForm()
-    return render(request,'NewApp/register.html', {'form': form})
+    return render(request,'registration/register.html', {'form': form})
+
+def final_order(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    return render(request, 'NewApp/final_order.html', {'order': order})
 
 # Create your views here.
 

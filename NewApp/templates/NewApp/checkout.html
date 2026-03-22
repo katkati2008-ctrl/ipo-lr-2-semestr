@@ -1,9 +1,11 @@
 <html>
 <head>
-    {% extends "index.html" %}
     <meta charset="UTF-8">
     <title>Оформление заказа</title>
     <style>
+          h1 {
+             color: #34024b;
+             }
         body {
             font-family: Arial, sans-serif;
             max-width: 800px;
@@ -74,22 +76,28 @@
                 <input type="text" name="num_phone" required>
                 
                 <label>Email для чека</label>
-                <input type="email" name="email" value="{{ user.email }}">
+                <input type="email" name="email" value="{{ user.email }}"  required>
                 
                 
                 <button type="submit" class="btn btn-primary">Подтвердить заказ</button>
             </form>
         </div>
         
-      
+  {% if items %}
         <div class="cart-section">
             <h2>Ваш заказ</h2>
             
             <table>
-                {% for item in cart.items.all %}
+                <tr>
+                <th>Товар</th>
+                <th>Количество</th>
+                <th>Цена</th>
+                </tr>
+
+                {% for item in items %}
                 <tr>
                     <td>{{ item.product.name }}</td>
-                    <td>x{{ item.quantity }}</td>
+                    <td>{{ item.quantity }}</td>
                     <td align="right">{{ item.elem_price }} руб</td>
                 </tr>
                 {% endfor %}
@@ -101,7 +109,7 @@
                 <table>
                     <tr>
                         <td>Итоговая сумма:</td>
-                        <td align="right">{{ cart.total_price }} руб</td>
+                        <td align="right">{{ total_price }} руб</td>
                     </tr>
                 </table>
             </div>
@@ -115,7 +123,8 @@
     <p style="margin-top: 20px;">
         <a href="{% url 'cart_view' %}">← Вернуться в корзину</a>
     </p>
-
-   
+  {% else %}
+         <p style="text-align: center; color: #450047;">Корзина пуста. <a href="{% url 'catalog' %}">Перейти в каталог</a></p>
+  {% endif %}      
 </body>
 </html>

@@ -17,8 +17,11 @@
                 <label for="id_password">Пароль</label>
                 <input type="password" name="password" id="id_password" required>
             </div>
-            <a href="{% url 'product_list' %}"><button type="submit" class="btn btn-primary" style="width: 100%;">Войти</button></a>
-            <input type="hidden" name="next" value="{{ next }}">
+
+    
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Войти</button>
+            <input type="hidden" name="next" value="{{ next  }}">
         </form>
         <div style="text-align: center; margin-top: 20px;">
             <p>Нет аккаунта? <a href="{% url 'register' %}" class="btn btn-secondary" style="margin-right: 10px;">Регистрация</a></p>
