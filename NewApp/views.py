@@ -10,6 +10,8 @@ from io import BytesIO
 from django.core.mail import EmailMessage
 from django.contrib.auth import login
 from .forms import CustomUserCreationForm
+from rest_framework import routers, serializers, viewsets
+
 
 def main(request):
     return render(request,'NewApp/index.html')
@@ -224,9 +226,9 @@ def register(request):
         form = CustomUserCreationForm()
     return render(request,'registration/register.html', {'form': form})
 
-def final_order(request, order_id):
-    order = get_object_or_404(Order, id=order_id, user=request.user)
-    return render(request, 'NewApp/final_order.html', {'order': order})
+class API_ViewSet(viewsets.ModelViewSet):
+    pass
+
 
 # Create your views here.
 
