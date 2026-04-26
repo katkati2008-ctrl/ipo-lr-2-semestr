@@ -1,16 +1,20 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
+from django.contrib.auth import login 
 from django.contrib import messages
-from .models import Product, Category, Manufacturer, Cart, CartElement,Order,OrderElement
 from django.conf import settings
+from django.db.models import Q
+from django.core.mail import EmailMessage
 from openpyxl import Workbook
 from io import BytesIO
-from django.core.mail import EmailMessage
-from django.contrib.auth import login
 from .forms import CustomUserCreationForm
-from rest_framework import routers, serializers, viewsets
+from rest_framework import  viewsets,permissions,filters
+from rest_framework.authentication import TokenAuthentication, SessionAuthentication
+
+from .models import Product, Category, Manufacturer, Cart, CartElement,Order,OrderElement
+from .serializers import  (ProductSerializer, CategorySerializer, ManufacturerSerializer, CartSerializer, CartElementSerializer)
+
 
 
 def main(request):
@@ -189,7 +193,7 @@ def checkout(request):
        message=f'''
        Ваш заказ успешно оформлен.
        Номер заказа: {order.id}.
-       Чек будет отправлен на вашу почту.
+       Вся информация представлена ниже
        Спасибо за покупку!
        '''
 
@@ -226,9 +230,48 @@ def register(request):
         form = CustomUserCreationForm()
     return render(request,'registration/register.html', {'form': form})
 
-class API_ViewSet(viewsets.ModelViewSet):
-    pass
 
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [TokenAuthentication, SessionAuthentication]
 
+class ManufacturerViewSet(viewsets.ModelViewSet):
+    queryset = Manufacturer.objects.all()
+    serializer_class = ManufacturerSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [TokenAuthentication, SessionAuthentication]
+
+class ProductViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [TokenAuthentication, SessionAuthentication]
+
+class CartViewSet(viewsets.ModelViewSet):
+    queryset = Cart.objects.all()
+    serializer_class = CartSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [TokenAuthentication, SessionAuthentication]
+    
+    def get_queryset(self):
+        return Cart.objects.filter(user=self.request.user)
+    
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class CartElementViewSet(viewsets.ModelViewSet):
+    queryset = CartElement.objects.all()
+    serializer_class = CartElementSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [TokenAuthentication, SessionAuthentication]
+
+    def get_queryset(self):
+      return CartElement.objects.filter(cart__user=self.request.user)
+
+    def perform_create(self, serializer):
+      cart,_ = Cart.objects.get_or_create(cart__user = self.request.user)
+      serializer.save(cart = cart)   
 # Create your views here.
 
