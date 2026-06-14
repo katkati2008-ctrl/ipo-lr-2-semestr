@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}О нас{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto text-center">
+            <h1 class="mb-4">О нас</h1>
+            <p class="lead">ПалаткаShop - ваш надежный партнер в мире активного отдыха и туризма!</p>
+            <p class="lead">Автором проекта является Мазалевская Екатерина Антоновна, учащаяся учебной группы 89ТП</p>
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <p>Мы предлагаем качественное снаряжение для пикников, кемпинга и туризма.</p>
+                    <p>В нашем ассортименте:</p>
+                    <ul class="list-unstyled">
+                        <li>🏕️ Палатки для любых условий</li>
+                        <li>🎒 Удобные рюкзаки и сумки</li>
+                        <li>🍳 Кухонное снаряжение</li>
+                        <li>🛏️ Спальные мешки и коврики</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <i class="fas fa-map-marker-alt fa-2x mb-2"></i>
+                            <h5>Наш адрес</h5>
+                            <p>г. Минск, ул. Туристическая, 15</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <i class="fas fa-phone fa-2x mb-2"></i>
+                            <h5>Контакты</h5>
+                            <p>Тел: +375 (29) 123-45-67<br>Email: info@palatkashop.by</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <a href="{% url 'product_list' %}" class="btn btn-primary">
+                    <i class="fas fa-store"></i> Перейти в каталог
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

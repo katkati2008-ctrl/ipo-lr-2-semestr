@@ -15,37 +15,30 @@ from rest_framework.authentication import TokenAuthentication, SessionAuthentica
 from .models import Product, Category, Manufacturer, Cart, CartElement,Order,OrderElement
 from .serializers import  (ProductSerializer, CategorySerializer, ManufacturerSerializer, CartSerializer, CartElementSerializer)
 
+from django.core.paginator import Paginator
+
 
 
 def main(request):
-    return render(request,'NewApp/index.html')
+    """Главная страница"""
+    
+    popular_products = Product.objects.all().order_by('-id')[:6]
+    categories = Category.objects.all()
+    
+    context = {
+        'popular_products': popular_products,
+        'categories': categories,
+    }
+    return render(request,'NewApp/index.html',context)
 
-def author(content):
-    content="""
-<title>Об авторе</title>
-<h1>Информация об авторе</h1>
-    <ul>
-        <h2>Автор: Мазалевская Екатерина</h2>
-        <h2>Группа: 89 ТП</h2>
-    </ul>"""
-    return HttpResponse(content)
-
-def about(content):
-    content = """
-    <title>О магазине</title>
-    <h1>Здесь находится основная информация о магазине</h1>
-    <ul>
-       <h2>Данный сайт представляет вещи для пикника и туризма<h2>
-       <h2>С ассортиментом вы можете ознакомиться тут:<h2>
-       <a href="/catalog/">Перейти в каталог</a>
-         </ul>"""
-    return HttpResponse(content)
+def about(request):
+    return render(request,'NewApp/about.html')
 
 def product_list(request):
     products = Product.objects.all()
     category = Category.objects.all()
     manufacturer= Manufacturer.objects.all()
-    
+
    
     categ = request.GET.get('category')
     if categ:
@@ -60,11 +53,21 @@ def product_list(request):
         products = products.filter(
             Q(name__icontains=search) | Q(description__icontains=search)
         )
-    return render(request, 'NewApp/product_list.html', {
-        'products': products,
+
+    paginator = Paginator(products, 9)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number) 
+
+    context = {
+        'products': page_obj,
         'category': category,
         'manufacturer': manufacturer,
-    })
+        'selected_category': int(categ) if categ else None,
+        'selected_manufacturer': int(manuf) if manuf else None,
+        'search': search,
+    }
+
+    return render(request, 'NewApp/product_list.html',context)
 
 
 def product_detail(request,pk):
@@ -117,7 +120,16 @@ def remove_from_cart(request,item_id):
 @login_required
 def cart_view(request):
    cart, _ = Cart.objects.get_or_create(user=request.user)
-   return render(request, 'NewApp/cart.html', {'cart': cart})
+   items = CartElement.objects.filter(cart=cart)
+   total_price=cart.total_price
+   
+   context = {
+        'cart': cart,
+        'items': items,
+        'total_price': total_price,
+    }
+
+   return render(request, 'NewApp/cart.html', context)
 
 
 

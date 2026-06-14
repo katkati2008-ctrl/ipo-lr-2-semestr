@@ -14,7 +14,6 @@ router.register(r'cart-elements',views.CartElementViewSet,basename='cart-items')
 urlpatterns = [
     path('',views.main,name='main'),
     path('about/',views.about,name='about'),
-    path('author/',views.author,name='author'),
     path('catalog/',views.product_list,name='product_list'),
     path('catalog/<int:pk>/',views.product_detail,name='product_detail'),
     path('cart/add/<int:item_id>/',views.add_to_cart,name='add_to_cart'),

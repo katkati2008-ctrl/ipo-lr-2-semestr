@@ -1,3 +1,172 @@
-h1 a {
-    color: #811fd1;
+:root {
+    --primary-color: #8b5cf6;      /* фиолетовый для кнопок */
+    --primary-dark: #7c3aed;       /* темнее для наведения */
+    --bg-light: #e7d4f7;           /* светлый фон */
+    --bg-white: #ffffff;            /* белый */
+    --text-dark: #4a2f6d;          /* темный текст */
+    --text-muted: #6c6c6c;         /* серый текст */
+    --border-color: #d4b8f0;       /* цвет границ */
+}
+
+
+body {
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+}
+
+
+.navbar {
+    background-color: #4a2f6d !important;
+}
+
+.navbar-brand {
+    color: white !important;
+}
+
+.nav-link {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.nav-link:hover {
+    color: #e7d4f7 !important;
+}
+
+
+.card {
+    background-color: var(--bg-white);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.card-title {
+    color: var(--text-dark);
+    font-weight: 600;
+}
+
+
+.btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark) !important;
+    border-color: var(--primary-dark) !important;
+}
+
+.btn-outline-primary {
+    color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+.btn-success {
+    background-color: #10b981 !important;
+    border-color: #10b981 !important;
+}
+
+.btn-danger {
+    background-color: #ef4444 !important;
+    border-color: #ef4444 !important;
+}
+
+
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--primary-dark);
+}
+
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-dark);
+}
+
+
+footer {
+    background-color: #4a2f6d !important;
+    color: white !important;
+}
+
+footer a {
+    color: #e7d4f7 !important;
+}
+
+footer a:hover {
+    color: white !important;
+}
+
+
+.card-header {
+    background-color: var(--bg-light) !important;
+    color: var(--text-dark) !important;
+    border-bottom: 1px solid var(--border-color);
+}
+
+
+.table th {
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+}
+
+
+.page-link {
+    color: var(--primary-color);
+}
+
+.page-link:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.page-item.active .page-link {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+
+.price {
+    color: var(--primary-color);
+    font-weight: bold;
+    font-size: 1.25rem;
+}
+
+
+.badge-primary {
+    background-color: var(--primary-color);
+}
+
+.badge-success {
+    background-color: #10b981;
+}
+
+.badge-danger {
+    background-color: #ef4444;
+}
+
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+.bg-my {
+    background-color: #9a6fff !important;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }

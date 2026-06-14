@@ -1,31 +1,57 @@
-<title>Вход</title>
-<h1>Вход в аккаунт</h1>
+{% extends 'base.html' %}
+
+{% block title %}Вход{% endblock %}
 
 {% block content %}
-    <div style="max-width: 400px; margin: 40px auto; background: #e7d4f7; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-        <h2 style="text-align: center;">Вход в аккаунт</h2>
-        {% if form.errors %}
-            <p class="errorlist" style="text-align: center;">Неверный пользователь или пароль.Попробуйте еще раз</p>
-        {% endif %}
-        <form method="post" action="{% url 'login' %}">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="id_username">Имя пользователя</label>
-                <input type="text" name="username" id="id_username" required>
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center">
+                    <h3 class="mb-0"><i class="fas fa-sign-in-alt"></i> Вход в аккаунт</h3>
+                </div>
+                <div class="card-body">
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle"></i> Неверное имя пользователя или пароль.
+                        </div>
+                    {% endif %}
+                    
+                    <form method="post" action="{% url 'login' %}">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label">
+                                <i class="fas fa-user"></i> Имя пользователя
+                            </label>
+                            <input type="text" name="username" id="id_username" class="form-control" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_password" class="form-label">
+                                <i class="fas fa-lock"></i> Пароль
+                            </label>
+                            <input type="password" name="password" id="id_password" class="form-control" required>
+                        </div>
+                        
+                        <input type="hidden" name="next" value="{{ next }}">
+                        
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-sign-in-alt"></i> Войти
+                        </button>
+                    </form>
+                    
+                    <hr>
+                    
+                    <div class="text-center">
+                        <p>Нет аккаунта? <a href="{% url 'register' %}">Зарегистрироваться</a></p>
+                        <a href="{% url 'main' %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> На главную
+                        </a>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="id_password">Пароль</label>
-                <input type="password" name="password" id="id_password" required>
-            </div>
-
-    
-
-            <button type="submit" class="btn btn-primary" style="width: 100%;">Войти</button>
-            <input type="hidden" name="next" value="{{ next  }}">
-        </form>
-        <div style="text-align: center; margin-top: 20px;">
-            <p>Нет аккаунта? <a href="{% url 'register' %}" class="btn btn-secondary" style="margin-right: 10px;">Регистрация</a></p>
-            <a href="{% url 'product_list' %}" class="btn btn-secondary">Вернуться в каталог</a>
         </div>
     </div>
+</div>
 {% endblock %}
