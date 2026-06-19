@@ -145,3 +145,30 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+
+function getCSRFToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+           document.cookie.match(/csrftoken=([^;]+)/)?.[1];
+}
+
+async function apiFetch(url, options = {}) {
+    const response = await fetch(url, {
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken(),
+            ...options.headers
+        }
+    });
+    
+    if (response.status === 401) {
+        window.location.href = '/login/?next=' + window.location.pathname;
+        return null;
+    }
+    if (response.status === 403) {
+        alert('Недостаточно прав');
+        return null;
+    }
+    return response;
+}

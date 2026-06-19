@@ -1,7 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import login 
+from django.contrib.auth import login, logout, authenticate 
 from django.contrib import messages
 from django.conf import settings
 from django.db.models import Q
@@ -12,10 +11,12 @@ from .forms import CustomUserCreationForm
 from rest_framework import  viewsets,permissions,filters
 from rest_framework.authentication import TokenAuthentication, SessionAuthentication
 
-from .models import Product, Category, Manufacturer, Cart, CartElement,Order,OrderElement
-from .serializers import  (ProductSerializer, CategorySerializer, ManufacturerSerializer, CartSerializer, CartElementSerializer)
-
+from .models import Product, Category, Manufacturer, Cart, CartElement,Order,OrderElement,Profile
+from .serializers import  (ProductSerializer, CategorySerializer, ManufacturerSerializer, CartSerializer, CartElementSerializer, ProfileSerializer, OrderSerializer)
+from .permissions import IsAdminOrReadOnly, IsOwnerOrAdmin
 from django.core.paginator import Paginator
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 
 
@@ -132,7 +133,6 @@ def cart_view(request):
    return render(request, 'NewApp/cart.html', context)
 
 
-
 @login_required
 def checkout(request):
    cart, _ = Cart.objects.get_or_create(user=request.user)
@@ -237,28 +237,56 @@ def register(request):
         if form.is_valid():
             user = form.save()
             login(request,user)
-            return redirect('product_list')
+            messages.success(request, 'Регистрация успешно завершена!')
+            return redirect('main')
     else:
         form = CustomUserCreationForm()
     return render(request,'registration/register.html', {'form': form})
+
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            login(request, user)
+            next_url = request.POST.get('next', 'main')
+            messages.success(request, f'Добро пожаловать, {user.username}!')
+            return redirect(next_url)
+        else:
+            messages.error(request, 'Неверное имя пользователя или пароль.')
+    
+    return render(request, 'registration/login.html')
+
+def logout_view(request):
+    logout(request)
+    messages.info(request, 'Вы вышли из аккаунта.')
+    return redirect('main')
+
+@login_required
+def profile_view(request):
+    categories = Category.objects.all()
+    return render(request, 'NewApp/profile.html', {'categories': categories})
+
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAdminOrReadOnly]
     authentication_classes = [TokenAuthentication, SessionAuthentication]
 
 class ManufacturerViewSet(viewsets.ModelViewSet):
     queryset = Manufacturer.objects.all()
     serializer_class = ManufacturerSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAdminOrReadOnly]
     authentication_classes = [TokenAuthentication, SessionAuthentication]
 
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAdminOrReadOnly]
     authentication_classes = [TokenAuthentication, SessionAuthentication]
 
 class CartViewSet(viewsets.ModelViewSet):
@@ -284,6 +312,43 @@ class CartElementViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
       cart,_ = Cart.objects.get_or_create(cart__user = self.request.user)
-      serializer.save(cart = cart)   
+      serializer.save(cart = cart) 
+
+class ProfileViewSet(viewsets.GenericViewSet):
+    serializer_class = ProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        return Profile.objects.filter(user=self.request.user)
+    
+    @action(detail=False, methods=['get'])
+    def me(self, request):
+        serializer = self.get_serializer(request.user.profile)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['patch'])
+    def update_me(self, request):  
+        profile = request.user.profile
+        serializer = self.get_serializer(profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class OrderViewSet(viewsets.ModelViewSet):
+    serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [TokenAuthentication, SessionAuthentication]
+    
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_superuser:
+            return Order.objects.all()
+        return Order.objects.filter(user=user)
+    
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
 # Create your views here.
 

@@ -43,7 +43,21 @@
                             <input type="email" name="email" id="id_email" class="form-control" 
                                    value="{{ form.email.value|default:'' }}" required>
                         </div>
-                        
+
+                        <div class="mb-3">
+                            <label for="id_city" class="form-label">
+                                <i class="fas fa-envelope"></i> Город
+                            </label>
+                            <input type="text" name="city" id="id_city" class="form-control" >
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_address" class="form-label">
+                                <i class="fas fa-envelope"></i> Город
+                            </label>
+                            <input type="address" name="address" id="id_city" class="form-control" >
+                        </div>
+
                         <div class="mb-3">
                             <label for="id_password1" class="form-label">
                                 <i class="fas fa-lock"></i> Пароль

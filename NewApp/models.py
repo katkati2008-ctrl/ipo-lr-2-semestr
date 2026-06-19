@@ -2,6 +2,8 @@ from django.db import models
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 class Category(models.Model):
     name=models.CharField(max_length=100,verbose_name='Категория товара')
@@ -80,8 +82,41 @@ class OrderElement(models.Model):
        quantity=models.PositiveIntegerField(verbose_name='Количество')
        price=models.DecimalField(max_digits=10, decimal_places=2,validators=[MinValueValidator(0)])
 
-
+class Profile(models.Model):
+    class Role(models.TextChoices):
+         CUSTOMER = 'customer', 'Покупатель'
+         MANAGER = 'manager', 'Менеджер'
+         ADMIN = 'admin', 'Администратор'
     
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    full_name = models.CharField(max_length=255, verbose_name='Полное имя')
+    phone = models.CharField(max_length=20, verbose_name='Телефон', blank=True)
+    address = models.TextField(verbose_name='Адрес доставки', blank=True)
+    role = models.CharField(max_length=20, choices=Role.choices, default=Role.CUSTOMER, verbose_name='Роль')
+    city = models.CharField(max_length=100, verbose_name='Город', blank=True)
+
+    def __str__(self):
+        return f"Профиль {self.user.username}"
+    
+    def is_admin(self):
+        return self.role == self.Role.ADMIN or self.user.is_superuser
+    
+    def is_manager(self):
+        return self.role == self.Role.MANAGER or self.user.is_staff
+ 
+    
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(
+            user=instance,
+            full_name=f"{instance.first_name} {instance.last_name}".strip() or instance.username
+        )
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    if hasattr(instance, 'profile'):
+        instance.profile.save()    
 
 
 

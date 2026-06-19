@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% block title %}Личный кабинет{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">Личный кабинет</h1>
+    
+    {% if user.is_authenticated %}
+        <div class="row">
+           
+            <div class="col-md-3 mb-4">
+                <div class="list-group">
+                    <a href="#" class="list-group-item list-group-item-action active" data-tab="profile">
+                        <i class="fas fa-user"></i> Профиль
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" data-tab="orders">
+                        <i class="fas fa-shopping-bag"></i> Мои заказы
+                    </a>
+                </div>
+            </div>
+            
+            <div class="col-md-9">
+          
+                <div id="profile-tab" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Информация о профиле</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="profile-view">
+                                <p><strong>Имя:</strong> {{ user.username }}</p>
+                                <p><strong>Email:</strong> {{ user.email }}</p>
+                                <p><strong>Полное имя:</strong> {{ user.profile.full_name }}</p>
+                                <p><strong>Телефон:</strong> {{ user.profile.phone|default:"-" }}</p>
+                                <p><strong>Адрес:</strong> {{ user.profile.address|default:"-" }}</p>
+                                <p><strong>Город:</strong> {{ user.profile.city|default:"-" }}</p>
+                                <p><strong>Роль:</strong> 
+                                     {% if user.is_superuser %}
+                                         <span class="badge bg-danger">Администратор</span>
+                                     {% elif user.profile.get_role_display %}
+                                         <span class="badge bg-secondary">{{ user.profile.get_role_display }}</span>
+                                     {% else %}
+                                         <span class="badge bg-secondary">Покупатель</span>
+                                     {% endif %}
+                                </p>
+                                <button class="btn btn-primary" id="edit-profile-btn">Редактировать</button>
+                            </div>
+                            
+                            <div id="profile-edit" style="display: none;">
+                                <form id="profile-form">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label class="form-label">Полное имя</label>
+                                        <input type="text" name="full_name" class="form-control" value="{{ user.profile.full_name }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Телефон</label>
+                                        <input type="text" name="phone" class="form-control" value="{{ user.profile.phone }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Адрес</label>
+                                        <textarea name="address" class="form-control">{{ user.profile.address }}</textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Город</label>
+                                        <textarea name="address" class="form-control">{{ user.profile.city }}</textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-success">Сохранить</button>
+                                    <button type="button" class="btn btn-secondary" id="cancel-edit-btn">Отмена</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="orders-tab" class="tab-content" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Мои заказы</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="orders-loading" class="text-center py-4">
+                                <div class="spinner-border text-primary"></div>
+                            </div>
+                            <div id="orders-content" style="display: none;">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>№</th>
+                                            <th>Дата</th>
+                                            <th>Сумма</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="orders-list"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-warning text-center py-5">
+            <h4>Вы не авторизованы</h4>
+            <a href="{% url 'login' %}" class="btn btn-primary">Войти</a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+
+document.querySelectorAll('[data-tab]').forEach(tab => {
+    tab.addEventListener('click', function(e) {
+        e.preventDefault();
+        const tabName = this.dataset.tab;
+        document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+        document.getElementById(`${tabName}-tab`).style.display = 'block';
+        if (tabName === 'orders') loadOrders();
+    });
+});
+
+
+document.getElementById('edit-profile-btn')?.addEventListener('click', () => {
+    document.getElementById('profile-view').style.display = 'none';
+    document.getElementById('profile-edit').style.display = 'block';
+});
+
+document.getElementById('cancel-edit-btn')?.addEventListener('click', () => {
+    document.getElementById('profile-view').style.display = 'block';
+    document.getElementById('profile-edit').style.display = 'none';
+});
+
+
+document.getElementById('profile-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.target));
+    const response = await fetch('/api/profile/update_me/', {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify(data)
+    });
+    if (response.ok) location.reload();
+});
+
+
+async function loadOrders() {
+    document.getElementById('orders-loading').style.display = 'block';
+    document.getElementById('orders-content').style.display = 'none';
+    const response = await fetch('/api/orders/');
+    if (response.ok) {
+        const orders = await response.json();
+        const tbody = document.getElementById('orders-list');
+        tbody.innerHTML = orders.map(o => `
+            <tr><td>${o.id}</td><td>${o.date_time || 'Нет даты'}</td><td>${o.total_price} BYN</td></tr>
+        `).join('');
+        document.getElementById('orders-loading').style.display = 'none';
+        document.getElementById('orders-content').style.display = 'block';
+    }
+}
+</script>
+{% endblock %}
